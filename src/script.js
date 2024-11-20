@@ -1041,6 +1041,68 @@
 
 
 
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
 
+    const brightnessSlider = document.getElementById('brightness');
+    const contrastSlider = document.getElementById('contrast');
+    const textureAlphaSlider = document.getElementById('textureAlpha');
+
+    const woodTexture = new Image();
+    woodTexture.src = `${ajax_variables.pluginUrl}img/woodBg.jpg`; // Replace with your wood texture path
+
+    const defaultImage = `${ajax_variables.pluginUrl}img/men.png`; // Set your default test image path
+
+    function adjustBrightnessContrast(imageData, brightness, contrast) {
+        const data = imageData.data;
+        const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+
+        for (let i = 0; i < data.length; i += 4) {
+            const gray = 0.3 * data[i] + 0.59 * data[i + 1] + 0.11 * data[i + 2];
+            const adjusted = factor * (gray - 128) + 128 + brightness;
+
+            data[i] = data[i + 1] = data[i + 2] = Math.min(255, Math.max(0, adjusted));
+        }
+
+        return imageData;
+    }
+
+    function applyLaserPrintEffect(img, brightness, contrast, textureAlpha) {
+        // Set canvas size to match the uploaded image
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        // Step 1: Draw the uploaded image in grayscale
+        ctx.drawImage(img, 0, 0);
+        let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        imageData = adjustBrightnessContrast(imageData, parseInt(brightness), parseInt(contrast));
+        ctx.putImageData(imageData, 0, 0);
+
+        // Step 2: Overlay the wood texture with transparency
+        ctx.globalAlpha = textureAlpha;
+        ctx.globalCompositeOperation = 'multiply'; // Simulate laser engraving effect
+        ctx.drawImage(woodTexture, 0, 0, canvas.width, canvas.height);
+
+        ctx.globalCompositeOperation = 'source-over'; // Reset to default mode
+        ctx.globalAlpha = 1.0;
+    }
+
+    const img = new Image();
+    img.onload = () => {
+        applyLaserPrintEffect(img, brightnessSlider.value, contrastSlider.value, textureAlphaSlider.value);
+    };
+    img.src = defaultImage;
+
+    // Update effects in real-time
+    document.querySelectorAll('.controls input').forEach((control) => {
+        control.addEventListener('input', () => {
+            applyLaserPrintEffect(
+                img,
+                brightnessSlider.value,
+                contrastSlider.value,
+                textureAlphaSlider.value
+            );
+        });
+    });
 
 }(jQuery));

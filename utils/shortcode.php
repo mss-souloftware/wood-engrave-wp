@@ -2,7 +2,7 @@
 
 /**
  * 
- * @package Crea Tu Frase
+ * @package Wood Engraving WP
  * @subpackage M. Sufyan Shaikh
  * 
  */
@@ -11,7 +11,7 @@ require_once ('confirmPayment/paymentfinish.php');
 require_once ('confirmPayment/closeprocess.php');
 require_once ('report/reportProblem.php');
 
-require_once 'payments/payments.php';
+// require_once ('payments/payments.php');
 
 if (isset($_COOKIE['chocol_cookie'])) {
     $getCookieOUI = get_option($_COOKIE['chocol_cookie']);
@@ -140,37 +140,17 @@ function chocoletras_shortCode()
             <div class="row justify-content-between">
 
                 <div class="col-md-7 col-12 text-center mb-2">
-                    <div id="typewriter">
-                        <div class="typewriterInner"></div>
-                        <?php
-                        if (isset($_COOKIE['chocoletraOrderData'])) {
-                            $getProductBanner = json_decode(stripslashes($_COOKIE['chocoletraOrderData']), true); ?>
-                            <style>
-                                @media(max-width:600px) {
-                                    #typewriter {
-                                        display: none !important;
-                                    }   
-                                }
-                            </style>
-                            <?php if (!empty($result)) { ?>
-                                <img class="dummyImg" src="<?php echo site_url() . $result['featured']; ?>" alt="">
-                            <?php } else { ?>
-                            <img class="dummyImg" src="<?php echo site_url() . $getProductBanner['productBanner']; ?>" alt="">
-                            <?php } 
-                        } else { ?>
-                        <?php if (!empty($result)) { ?>
-                                <img class="dummyImg" src="<?php echo site_url() . $result['featured']; ?>" alt="">
-                            <?php } else { ?>
-                                <p class="dummyImg">
-                                <img src="<?php echo plugins_url('../img/letters/Claro/c.webp', __FILE__); ?>" alt="C">
-                                <img src="<?php echo plugins_url('../img/letters/Claro/r.webp', __FILE__); ?>" alt="R">
-                                <img src="<?php echo plugins_url('../img/letters/Claro/e.webp', __FILE__); ?>" alt="E">
-                                <img src="<?php echo plugins_url('../img/letters/Claro/a.webp', __FILE__); ?>" alt="A">
-                                <span class="typed-images"></span><span class="cursor blink">&nbsp;</span>
-                                </p>
-                        <?php } 
-                    } ?>
-                    </div>`
+                <canvas id="canvas"></canvas>
+                <div class="controls">
+                    <label for="contrast">Contrast</label>
+                    <input type="range" id="contrast" min="-100" max="100" value="0">
+                    <br>
+                    <label for="brightness">Brightness</label>
+                    <input type="range" id="brightness" min="-100" max="100" value="0">
+                    <br>
+                    <label for="textureAlpha">Wood Texture Transparency</label>
+                    <input type="range" id="textureAlpha" min="0" max="1" step="0.05" value="0.6">
+                </div>
                 </div>
 
                 <div class="col-md-5 col-12 text-center mb-2">
@@ -230,7 +210,7 @@ function chocoletras_shortCode()
                                 <div class="form-card">
                                     <div class="row">
                                         <div class="col-7">
-                                            <h2 class="fs-title">Crea tu frase</h2>
+                                            <h2 class="fs-title">Wood Engraving WP</h2>
                                         </div>
                                         <div class="col-5">
                                             <h2 class="steps">
@@ -865,9 +845,9 @@ function chocoletras_shortCode()
                         <div class="chocoletrasPlg__wrapperCode-firstHead-dataUser"></div>
                     </div>
                     <?php  
-                    $dynamount = null;
-                    $dyninsertedId = null;
-                    echo paymentFrontend($dynamount, $dyninsertedId) ;?>
+                    // $dynamount = null;
+                    // $dyninsertedId = null;
+                    // echo paymentFrontend($dynamount, $dyninsertedId) ;?>
                     <!-- <a class="copyrightPluginSet" href="https://syntechtia.com/">Hecho con ❤️ por Syntechtia</a> -->
                 </div>
             </div>

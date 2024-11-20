@@ -3,7 +3,7 @@
 /**
  * Author: M. Sufyan Shaikh
  * Description: Process form and send info to cookie
- * @package Crea Tu Frase
+ * @package Wood Engraving WP
  * @subpackage M. Sufyan Shaikh
  */
 

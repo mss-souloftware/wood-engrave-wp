@@ -1,7 +1,7 @@
 <?php
 /**
  * 
- * @package Crea Tu Frase
+ * @package Wood Engraving WP
  * @subpackage M. Sufyan Shaikh
  * 
  */
