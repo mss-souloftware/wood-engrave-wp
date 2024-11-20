@@ -5,6 +5,41 @@
     font-family: "Lato", sans-serif;
 }
 
+#canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    object-position: top;
+}
+
+
+#drop-area {
+    border: 2px dashed #aaa;
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #fffae4;
+    border-radius: 8px;
+    min-height: 2in;
+    flex-direction: column;
+    gap: 10px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.drop-text {
+    font-size: 18px;
+    color: #888;
+}
+
+.chocoletrasPlg__wrapperCode-dataUser-form .controls input{
+    padding:0 !important;
+    border:none !important;
+}
+
 #heading {
     text-transform: uppercase;
     color: #673AB7;

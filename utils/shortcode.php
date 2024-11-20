@@ -141,16 +141,6 @@ function chocoletras_shortCode()
 
                 <div class="col-md-7 col-12 text-center mb-2">
                 <canvas id="canvas"></canvas>
-                <div class="controls">
-                    <label for="contrast">Contrast</label>
-                    <input type="range" id="contrast" min="-100" max="100" value="0">
-                    <br>
-                    <label for="brightness">Brightness</label>
-                    <input type="range" id="brightness" min="-100" max="100" value="0">
-                    <br>
-                    <label for="textureAlpha">Wood Texture Transparency</label>
-                    <input type="range" id="textureAlpha" min="0" max="1" step="0.05" value="0.6">
-                </div>
                 </div>
 
                 <div class="col-md-5 col-12 text-center mb-2">
@@ -222,31 +212,26 @@ function chocoletras_shortCode()
                                             </h2>
                                         </div>
                                     </div>
-                                    <div class="fraseWrapper">
-                                        <div class="frasePanel">
-                                            <input id="<?php echo _e('getText') ?>" type="text"
-                                                placeholder="<?php echo _e('Escriba su frase aqu&iacute;..'); ?>"
-                                                maxlength="<?php echo get_option('maxCaracteres'); ?>" required>
-                                        </div>
-                                    </div>
-                                    <button type="button" id="addNewFrase" disabled>
-                                    <img src="<?php echo plugins_url('../img/add-icon.png', __FILE__); ?>" alt="Add New Phrase"> Nueva frase
-                                    </button>
 
-                                    <label class="fieldlabels">Tipo de espacio</label>
-                                    <select id="letras" class="" name="attribute_letras">
-                                        <option selected value="heart" class="attached enabled">Corazón</option>
-                                        <option value="star" class="attached enabled">Estrella</option>
-                                    </select>
-                                    
-                                        <label class="fieldlabels">Tipo de chocolate</label>
-                                        <select id="chocoBase">
-                                            <option selected value="Claro" class="attached enabled">Chocolate con Leche</option>
-                                            <option value="Negro" class="attached enabled">Chocolate Negro</option>
-                                        </select>
-                                    
+                                    <div id="drop-area">
+  <div class="drop-icon">
+    <i class="fa-light fa-file-upload"></i>
+  </div>
+  <div class="drop-text">Drag and drop your image here</div>
+</div>
+
+                                    <div class="controls">
+                                        <label for="contrast">Contrast</label>
+                                        <input type="range" id="contrast" min="-100" max="100" value="0">
+                                        <br>
+                                        <label for="brightness">Brightness</label>
+                                        <input type="range" id="brightness" min="-100" max="100" value="0">
+                                        <br>
+                                        <label for="textureAlpha">Wood Texture Transparency</label>
+                                        <input type="range" id="textureAlpha" min="0" max="1" step="0.05" value="0.6">
+                                    </div>              
                                 </div> <button id="<?php echo _e('continuarBTN') ?>" type="button" name="next"
-                                    class="next action-button" disabled>Continuar</button>
+                                    class="next action-button" >Continuar</button>
                             </fieldset>
                             <fieldset <?php
                             if (isset($_COOKIE['chocol_cookie']) || $_GET['abandoned']) {
@@ -366,7 +351,7 @@ function chocoletras_shortCode()
                                                     </svg>
                                                 </div>
                                                 <div class="paymentIcon">
-                                                    <img src="<?php echo plugin_dir_url(__DIR__) . "img/redsys.png"; ?>" alt="">
+                                                <img src="<?php echo plugin_dir_url(__DIR__) . "img/redsys.png"; ?>" alt="">
                                                 </div>
                                                 <div class="paymentData">
                                                     Pagar Con Tarjeta
