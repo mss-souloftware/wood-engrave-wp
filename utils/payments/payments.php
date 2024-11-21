@@ -154,7 +154,7 @@ if (isset($_GET['payment']) && $_GET['payment'] == true) {
 //     error_log("Sanitized Inserted ID: " . $dyninsertedId);
 //     error_log("Sanitized Amount: " . $dynamount);
 // }
-
+// }
 function paymentFrontend($dynamount, $dyninsertedId)
 {
     // error_log("Inside Sanitized Inserted ID: " . $dyninsertedId);
@@ -236,7 +236,7 @@ function paymentFrontend($dynamount, $dyninsertedId)
             curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
             curl_setopt($ch, CURLOPT_POST, 1);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $req);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, value: $req);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 1);
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
@@ -594,4 +594,5 @@ function paymentFrontend($dynamount, $dyninsertedId)
 
     <?php
     return ob_get_clean();
-} ?>
+} 
+// } ?>

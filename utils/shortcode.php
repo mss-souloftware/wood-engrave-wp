@@ -11,7 +11,7 @@ require_once ('confirmPayment/paymentfinish.php');
 require_once ('confirmPayment/closeprocess.php');
 require_once ('report/reportProblem.php');
 
-// require_once ('payments/payments.php');
+require_once ('payments/payments.php');
 
 if (isset($_COOKIE['chocol_cookie'])) {
     $getCookieOUI = get_option($_COOKIE['chocol_cookie']);
@@ -498,7 +498,7 @@ function chocoletras_shortCode()
                                     <input class="chocoletrasPlg__wrapperCode-dataUser-form-input" type="hidden"
                                         name="chocofrase" readonly>
                                     <input class="chocoletrasPlg__wrapperCode-dataUser-form-input-price" type="hidden"
-                                        name="price" readonly>
+                                        name="price" readonly value="<?php echo get_option('gastoMinimo') + get_option('precEnvio'); ?>">
                                     <input id="expressShipingPrice" type="hidden"
                                         value="<?php echo get_option('expressShiping') ?>" readonly>
                                     <input id="ExpressActivator" type="hidden" name="express" value="off" readonly>
@@ -830,9 +830,9 @@ function chocoletras_shortCode()
                         <div class="chocoletrasPlg__wrapperCode-firstHead-dataUser"></div>
                     </div>
                     <?php  
-                    // $dynamount = null;
-                    // $dyninsertedId = null;
-                    // echo paymentFrontend($dynamount, $dyninsertedId) ;?>
+                    $dynamount = null;
+                    $dyninsertedId = null;
+                    echo paymentFrontend($dynamount, $dyninsertedId) ;?>
                     <!-- <a class="copyrightPluginSet" href="https://syntechtia.com/">Hecho con ❤️ por Syntechtia</a> -->
                 </div>
             </div>

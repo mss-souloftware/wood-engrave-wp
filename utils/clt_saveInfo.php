@@ -3,26 +3,22 @@
 /**
  * Author: M. Sufyan Shaikh
  * Description: Process form and send info to cookie
- * @package Wood Engraving WP
+ * @package Crea Tu Frase
  * @subpackage M. Sufyan Shaikh
  */
 
 function responseForm()
 {
     try {
-        // Retrieve and process data
         $response = array('Datos' => confirmAllIsReady());
-
-        // Payment handling
         $amount = isset($_POST['priceTotal']) ? sanitize_text_field($_POST['priceTotal']) : '';
-        $paymentMethod = isset($_POST['paymentType']) ? sanitize_text_field($_POST['paymentType']) : ''; // Use the value from input
+        $paymentMethod = isset($_POST['paymentType']) ? sanitize_text_field($_POST['paymentType']) : '';
 
         if (!is_numeric($amount) || floatval($amount) <= 0) {
             wp_send_json(['success' => false, 'message' => 'Invalid amount']);
             return;
         }
 
-        // Payment logic for PayPal
         if ($paymentMethod === 'paypal') {
             wp_send_json([
                 'success' => true,
@@ -36,9 +32,8 @@ function responseForm()
             return;
         }
 
-        // Redsys or other payment gateways
         $paymentObj = new RedsysAPI;
-        $formattedAmount = round(floatval($amount) * 100); // Format amount for Redsys
+        $formattedAmount = round(floatval($amount) * 100);
         $orderNumberRandom = bin2hex(random_bytes(5));
 
         $plugin_page = get_option('ctf_settings')['plugin_page'];
@@ -55,14 +50,8 @@ function responseForm()
         $paymentObj->setParameter("DS_MERCHANT_URLOK", "$plugin_payment?payment=true");
         $paymentObj->setParameter("DS_MERCHANT_URLKO", $thank_you_page);
 
-        // Set DS_MERCHANT_TRANSACTIONTYPE based on payment method
-        if ($paymentMethod === 'bizum' || $paymentMethod === 'google') {
-            $paymentObj->setParameter("DS_MERCHANT_TRANSACTIONTYPE", "7");
-        } else {
-            $paymentObj->setParameter("DS_MERCHANT_TRANSACTIONTYPE", "0");
-        }
+        $paymentObj->setParameter("DS_MERCHANT_TRANSACTIONTYPE", $paymentMethod === 'bizum' || $paymentMethod === 'google' ? "7" : "0");
 
-        // Set payment method for Redsys alternatives
         if ($paymentMethod !== 'redsys') {
             $paymentTypeMapping = [
                 'bizum' => ['payMethods' => 'z'],
@@ -77,13 +66,9 @@ function responseForm()
             $paymentObj->setParameter("DS_MERCHANT_PAYMETHODS", $paymentTypeMapping[$paymentMethod]['payMethods']);
         }
 
-        // Create merchant parameters and signature
         $paymentParams = $paymentObj->createMerchantParameters();
-        $signature = $paymentObj->createMerchantSignature('sq7HjrUOBfKmC576ILgskD5srU870gJ7'); // Testing
-        // $signature = $paymentObj->createMerchantSignature('qdBg81KwXKi+QZpgNXoOMfBzsVhBT+tm'); // Live
+        $signature = $paymentObj->createMerchantSignature('sq7HjrUOBfKmC576ILgskD5srU870gJ7');
 
-
-        // Return success with payment parameters
         wp_send_json([
             'success' => true,
             'Datos' => [
@@ -107,8 +92,7 @@ function responseForm()
 
 function confirmAllIsReady()
 {
-    setcookie('chocol_price', '', time() - 3600);
-    $getData = array('mainText', 'chocoType', 'priceTotal', 'fname', 'email', 'tel', 'postal', 'city', 'address', 'province', 'message', 'picDate', 'shippingType', 'nonce', 'uoi', 'coupon', 'screens', 'featured', 'affiliateID', 'loggedInUser', 'paymentType');
+    $getData = array('priceTotal', 'fname', 'email', 'tel', 'postal', 'city', 'address', 'province', 'message', 'picDate', 'shippingType', 'nonce', 'uoi', 'coupon', 'screens', 'featured', 'affiliateID', 'loggedInUser', 'paymentType');
 
     $confirm_error = array();
 
@@ -138,31 +122,15 @@ function saveDataInDatabase($datos)
     $sanitizeData = array();
 
     foreach ($datos as $info => $val) {
-        switch ($info) {
-            case 'mainText':
-                $chocofraseArray = json_decode(stripslashes($datos[$info]), true);
-                foreach ($chocofraseArray as $index => $frase) {
-                    $chocofraseArray[$index] = confirmViolationOfSequirity($frase);
-                }
-                $sanitizeData[$info] = json_encode($chocofraseArray);
-                break;
-            case 'screens':
-                $sanitizeData[$info] = stripslashes($datos[$info]); // No need to sanitize JSON strings
-                break;
-            default:
-                $sanitizeData[$info] = sanitize_text_field($datos[$info]);
-                break;
-        }
+        $sanitizeData[$info] = sanitize_text_field($datos[$info]);
     }
 
     global $wpdb;
     $tablename = $wpdb->prefix . 'chocoletras_plugin';
 
     $query = $wpdb->prepare(
-        "INSERT INTO $tablename (frase, chocotype, precio, nombre, email, telefono, cp, ciudad, province, message, direccion, nonce, fechaEntrega, express, uoi, coupon, screens, featured, affiliate_id, loggedInUser, selectedMethod) 
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-        $sanitizeData['mainText'],
-        $sanitizeData['chocoType'],
+        "INSERT INTO $tablename (precio, nombre, email, telefono, cp, ciudad, province, message, direccion, nonce, fechaEntrega, express, uoi, coupon, screens, featured, affiliate_id, loggedInUser, selectedMethod) 
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
         $sanitizeData['priceTotal'],
         $sanitizeData['fname'],
         $sanitizeData['email'],

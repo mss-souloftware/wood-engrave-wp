@@ -343,8 +343,6 @@
 
             const dataToSend = {
                 action: 'test_action',
-                mainText: JSON.stringify(mainText),
-                chocoType: chocoType,
                 priceTotal: priceTotal,
                 fname: fullName,
                 email: email,
@@ -410,8 +408,6 @@
 
                         const cookieData = {
                             inserted_id: parsedResponse.Datos.inserted_id,
-                            mainText: mainText,
-                            chocoType: chocoType,
                             priceTotal: priceTotal,
                             fname: fullName,
                             email: email,
@@ -442,6 +438,7 @@
 
                         // Trigger payment form submission or another action if needed
                         $("#proceedPayment").click();
+                        console.log("proceesd paymnt")
 
                     } else {
                         console.error("Process failed: ", parsedResponse.Datos.message);
@@ -1040,6 +1037,8 @@
 
 
 
+    let currentImage = null; // Holds the currently active image
+
 
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
@@ -1050,7 +1049,7 @@
 
     const woodTexture = new Image();
     woodTexture.src = `${ajax_variables.pluginUrl}img/woodBg.jpg`; // Replace with your wood texture path
-
+    console.log("canvas")
     const defaultImage = `${ajax_variables.pluginUrl}img/men.png`; // Set your default test image path
 
     function adjustBrightnessContrast(imageData, brightness, contrast) {
@@ -1102,14 +1101,17 @@
     // Update effects in real-time
     document.querySelectorAll('.controls input').forEach((control) => {
         control.addEventListener('input', () => {
-            applyLaserPrintEffect(
-                img,
-                brightnessSlider.value,
-                contrastSlider.value,
-                textureAlphaSlider.value
-            );
+            if (currentImage) {
+                applyLaserPrintEffect(
+                    currentImage,
+                    brightnessSlider.value,
+                    contrastSlider.value,
+                    textureAlphaSlider.value
+                );
+            }
         });
     });
+
 
 
 
@@ -1162,36 +1164,57 @@
 
     function handleDrop(event) {
         event.preventDefault();
-        const file = event.dataTransfer.files[0];
-        const reader = new FileReader();
-
-        reader.readAsText(file);
-        reader.onload = function () {
-            droppedContent.value = reader.result;
-        };
-
         unhighlight();
+
+        const file = event.dataTransfer.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const img = new Image();
+            img.onload = () => {
+                currentImage = img; // Store the uploaded image
+                applyLaserPrintEffect(img, brightnessSlider.value, contrastSlider.value, textureAlphaSlider.value);
+            };
+            img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
     }
+
+
 
     function openFileDialog(event) {
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
-        fileInput.accept = 'text/plain';
+        fileInput.accept = 'image/*';
 
         fileInput.addEventListener('change', handleFileSelect, false);
 
         fileInput.click();
     }
 
-    function handleFileSelect(event) {
-        const file = event.target.files[0];
-        const reader = new FileReader();
 
-        reader.readAsText(file);
-        reader.onload = function () {
-            droppedContent.value = reader.result;
+    function handleFileSelect(event) {
+        const fileInput = event.target;
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const img = new Image();
+            img.onload = () => {
+                currentImage = img; // Store the selected image
+                applyLaserPrintEffect(img, brightnessSlider.value, contrastSlider.value, textureAlphaSlider.value);
+            };
+            img.src = reader.result;
         };
+        reader.readAsDataURL(file);
+
+        fileInput.value = ''; // Clear input to allow reselection
     }
+
+
+
 
     const chars = document.getElementById('chars');
 
