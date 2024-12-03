@@ -144,9 +144,9 @@ function chocoletras_shortCode()
                 </div>
 
                 <div class="col-md-5 col-12 text-center mb-2">
-                    <div class="chocoletrasPlg-spiner">
-                        <img id="screenCenterLoader" src="https://chocoletra.com/wp-content/uploads/2022/03/imagenlogotipoOFCIALCHOCOLETRA-1.png"
-                            alt="<?php echo _e('Chocoletras'); ?>">
+                    <div id="screenCenterLoader" class="chocoletrasPlg-spiner">
+                        <!-- <img id="screenCenterLoader" src="https://chocoletra.com/wp-content/uploads/2022/03/imagenlogotipoOFCIALCHOCOLETRA-1.png"
+                            alt="<?php // echo _e('Chocoletras'); ?>"> -->
                         <div class="chocoletrasPlg-spiner-ring"></div>
                     </div>
                     <div id="mainWrapperForm" class="card">

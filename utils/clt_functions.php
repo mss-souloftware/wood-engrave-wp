@@ -350,7 +350,7 @@ add_action('wp_ajax_saveOptionsEmail', 'outputSavedOptionsEmail');
 
 // save reportForm
 add_action('wp_ajax_nopriv_reportForm', 'saveReportData');
-add_action('wp_ajax_reportForm', 'saveReportData');
+add_action('wp_ajax_reportForm', 'saveReportData'); 
 
 //=============================================================//
 define('PROCESS_FRASE', plugins_url('clt_process_form.php', __FILE__));

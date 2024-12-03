@@ -148,6 +148,63 @@
     background-color: #000000
 }
 
+
+#ctf_form input[type="range"]:focus{
+    border:none !important;
+}
+
+#ctf_form input[type="range"]{
+    -webkit-appearance: none;
+    outline: none;
+}
+
+#ctf_form input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; 
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #C69453;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+#ctf_form input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #C69453;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+#ctf_form input[type="range"]::-ms-thumb {
+    width: 20px;
+    height: 20px;
+    background: #C69453;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+#ctf_form input[type="range"]::-webkit-slider-runnable-track {
+    height: 8px;
+    background: linear-gradient(to right, #C69453, #fff);
+    border-radius: 5px;
+}
+
+#ctf_form input[type="range"]::-moz-range-track {
+    height: 8px;
+    background: linear-gradient(to right, #C69453, #fff);
+    border-radius: 5px;
+}
+
+#ctf_form input[type="range"]::-ms-track {
+    height: 8px;
+    background: linear-gradient(to right, #C69453, #fff);
+    border-radius: 5px;
+    border: none;
+}
+
 .card {
     z-index: 0;
     border: none;
