@@ -7,7 +7,7 @@ require_once plugin_dir_path(__FILE__) . '../../admin/outPutMail/sendEmail.php';
 $redsysAPIwoo = WP_PLUGIN_DIR . '/redsyspur/apiRedsys/apiRedsysFinal.php';
 require_once($redsysAPIwoo);
 
-$miObj = new RedsysAPI;
+$miObj = new RedsyspurAPI;
 
 $version = $_POST["Ds_SignatureVersion"];
 $params = $_POST["Ds_MerchantParameters"];
@@ -180,9 +180,16 @@ function paymentFrontend($dynamount, $dyninsertedId)
 
     <div style="display:none;" class="chocoletrasPlg__wrapperCode-payment-buttons-left">
         <?php
-        $plugin_page = get_option('ctf_settings')['plugin_page'];
-        $plugin_payment = get_option('ctf_settings')['plugin_payment'];
-        $thank_you_page = get_option('ctf_settings')['thank_you_page'];
+        $general_settings = get_option('ctf_general_settings', []);
+        $redsys_settings = get_option('ctf_redsys_settings', []);
+        $paypal_settings = get_option('ctf_paypal_settings', []);
+
+
+        $plugin_page = $general_settings['plugin_page'];
+        $plugin_payment = $general_settings['plugin_payment'];
+        $thank_you_page = $general_settings['thank_you_page'];
+
+
 
         function log_ipn($message)
         {
@@ -195,7 +202,7 @@ function paymentFrontend($dynamount, $dyninsertedId)
 
         // PayPal Configuration
         // define('PAYPAL_EMAIL', 'sb-hjjsi25330300@business.example.com');
-        define('PAYPAL_EMAIL', 'chocoletra2020@gmail.com');
+        
         define('RETURN_URL', "$plugin_page?payment=true");
         define('CANCEL_URL', $plugin_payment);
         define('NOTIFY_URL', "$thank_you_page");
@@ -232,11 +239,17 @@ function paymentFrontend($dynamount, $dyninsertedId)
                 $req .= "&$key=$value";
             }
 
-            $ch = curl_init('https://ipnpb.paypal.com/cgi-bin/webscr');
+            if ($paypal_settings['mode'] === 'sandbox') {
+                $paypalConfirm = 'https://ipnpb.sandbox.paypal.com/cgi-bin/webscr';
+            } else {
+                $paypalConfirm = 'https://ipnpb.paypal.com/cgi-bin/webscr';
+            }
+
+            $ch = curl_init($paypalConfirm);
             curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
             curl_setopt($ch, CURLOPT_POST, 1);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, value: $req);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $req);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 1);
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
@@ -409,7 +422,7 @@ function paymentFrontend($dynamount, $dyninsertedId)
 
         require_once($redsysAPIwoo);
 
-        $miObj = new RedsysAPI;
+        $miObj = new RedsyspurAPI;
 
         $priceTotal = $result['precio'];
 
@@ -447,43 +460,47 @@ function paymentFrontend($dynamount, $dyninsertedId)
 
         $miObj->setParameter("DS_MERCHANT_AMOUNT", $amount);
         $miObj->setParameter("DS_MERCHANT_ORDER", $orderNumberRedsys);
-        $miObj->setParameter("DS_MERCHANT_MERCHANTCODE", "340873405");
+        $miObj->setParameter("DS_MERCHANT_MERCHANTCODE", $redsys_settings['merchant_account']);
         $miObj->setParameter("DS_MERCHANT_CURRENCY", "978");
         $miObj->setParameter("DS_MERCHANT_TRANSACTIONTYPE", "0");
-        $miObj->setParameter("DS_MERCHANT_TERMINAL", "001");
+        $miObj->setParameter("DS_MERCHANT_TERMINAL", $redsys_settings['terminal']);
         $miObj->setParameter("DS_MERCHANT_MERCHANTDATA", $insertedID);
         $miObj->setParameter("DS_MERCHANT_MERCHANTURL", $plugin_page);
         $miObj->setParameter("DS_MERCHANT_URLOK", "$plugin_payment?payment=true");
         $miObj->setParameter("DS_MERCHANT_URLKO", $thank_you_page);
 
         $params = $miObj->createMerchantParameters();
-        // $claveSHA256 = 'qdBg81KwXKi+QZpgNXoOMfBzsVhBT+tm';
-        $claveSHA256 = 'sq7HjrUOBfKmC576ILgskD5srU870gJ7';
+        $claveSHA256 = $redsys_settings['sha_key'];
+        // $claveSHA256 = 'sq7HjrUOBfKmC576ILgskD5srU870gJ7';
         $firma = $miObj->createMerchantSignature($claveSHA256);
-        ?>
-        <form id="payRedsys" action="https://sis-t.redsys.es:25443/sis/realizarPago" method="POST">
-        <!-- <form id="payRedsys" action="https://sis.redsys.es/sis/realizarPago" method="POST"> -->
-            <input type="hidden" name="Ds_SignatureVersion" value="HMAC_SHA256_V1" />
-            <input type="hidden" name="Ds_MerchantParameters" value="<?php echo $params; ?>" />
-            <input type="hidden" name="Ds_Signature" value="<?php echo $firma; ?>" />
-            <button type="submit"><span>
-                    <?php echo _e('Pagar con Tarjeta '); ?>
-                </span><img src="https://chocoletra.com/wp-content/uploads/2024/03/redsys-tarjetas.png"
-                    alt="<?php echo _e('Chocoletra'); ?>"></button>
-        </form>
+
+        if ($redsys_settings['mode'] === 'sandbox') {
+            ?>
+            <form id="payRedsys" action="https://sis-t.redsys.es:25443/sis/realizarPago" method="POST">
+            <?php } else { ?>
+                <form id="payRedsys" action="https://sis.redsys.es/sis/realizarPago" method="POST">
+                <?php } ?>
+                <input type="hidden" name="Ds_SignatureVersion" value="HMAC_SHA256_V1" />
+                <input type="hidden" name="Ds_MerchantParameters" value="<?php echo $params; ?>" />
+                <input type="hidden" name="Ds_Signature" value="<?php echo $firma; ?>" />
+                <button type="submit"><span>
+                        <?php echo _e('Pagar con Tarjeta '); ?>
+                    </span><img src="https://chocoletra.com/wp-content/uploads/2024/03/redsys-tarjetas.png"
+                        alt="<?php echo _e('Chocoletra'); ?>"></button>
+            </form>
     </div>
     <div style="display:none;" class="chocoletrasPlg__wrapperCode-payment-buttons-left">
         <?php
         // echo $lastCookieVal;
-        $bizumObj = new RedsysAPI;
+        $bizumObj = new RedsyspurAPI;
 
         // $bizumObj->setParameter("DS_MERCHANT_AMOUNT", 10);
         $bizumObj->setParameter("DS_MERCHANT_AMOUNT", $amount);
         $bizumObj->setParameter("DS_MERCHANT_ORDER", $orderNumberBizum);
-        $bizumObj->setParameter("DS_MERCHANT_MERCHANTCODE", "340873405");
+        $bizumObj->setParameter("DS_MERCHANT_MERCHANTCODE", $redsys_settings['merchant_account']);
         $bizumObj->setParameter("DS_MERCHANT_CURRENCY", "978");
         $bizumObj->setParameter("DS_MERCHANT_TRANSACTIONTYPE", "7");
-        $bizumObj->setParameter("DS_MERCHANT_TERMINAL", "001");
+        $bizumObj->setParameter("DS_MERCHANT_TERMINAL", $redsys_settings['terminal']);
         $bizumObj->setParameter("DS_MERCHANT_PAYMETHODS", "z");
         $bizumObj->setParameter("DS_MERCHANT_MERCHANTDATA", $insertedID);
         $bizumObj->setParameter("DS_MERCHANT_MERCHANTURL", $plugin_page);
@@ -491,36 +508,39 @@ function paymentFrontend($dynamount, $dyninsertedId)
         $bizumObj->setParameter("DS_MERCHANT_URLKO", $thank_you_page);
 
         $bizumparams = $bizumObj->createMerchantParameters();
-        // $bizumclaveSHA256 = 'qdBg81KwXKi+QZpgNXoOMfBzsVhBT+tm';
-        $bizumclaveSHA256 = 'sq7HjrUOBfKmC576ILgskD5srU870gJ7';
+        $bizumclave1 = $redsys_settings['sha_key'];
+        // $bizumclaveSHA256 = 'sq7HjrUOBfKmC576ILgskD5srU870gJ7';
         $bizumfirma = $bizumObj->createMerchantSignature($bizumclaveSHA256);
 
-        ?>
-        <form id="payBizum" action="https://sis-t.redsys.es:25443/sis/realizarPago" method="POST">
-        <!-- <form id="payBizum" action="https://sis.redsys.es/sis/realizarPago" method="POST"> -->
-            <input type="hidden" name="Ds_SignatureVersion" value="HMAC_SHA256_V1" />
-            <input type="hidden" name="Ds_MerchantParameters" value="<?php echo $bizumparams; ?>" />
-            <input type="hidden" name="Ds_Signature" value="<?php echo $bizumfirma; ?>" />
-            <button type="submit"><span>
-                    <?php echo _e('Pagar con Bizum '); ?>
-                </span><img src="https://chocoletra.com/wp-content/uploads/2024/03/Bizum.svg.png"
-                    alt="<?php echo _e('Chocoletra'); ?>"></button>
-        </form>
+        if ($redsys_settings['mode'] === 'sandbox') {
+            ?>
+            <form id="payBizum" action="https://sis-t.redsys.es:25443/sis/realizarPago" method="POST">
+            <?php } else { ?>
+                <form id="payBizum" action="https://sis.redsys.es/sis/realizarPago" method="POST">
+                <?php } ?>
+                <input type="hidden" name="Ds_SignatureVersion" value="HMAC_SHA256_V1" />
+                <input type="hidden" name="Ds_MerchantParameters" value="<?php echo $bizumparams; ?>" />
+                <input type="hidden" name="Ds_Signature" value="<?php echo $bizumfirma; ?>" />
+                <button type="submit"><span>
+                        <?php echo _e('Pagar con Bizum '); ?>
+                    </span><img src="https://chocoletra.com/wp-content/uploads/2024/03/Bizum.svg.png"
+                        alt="<?php echo _e('Chocoletra'); ?>"></button>
+            </form>
 
     </div>
 
     <div style="display:none;" class="chocoletrasPlg__wrapperCode-payment-buttons-left">
         <?php
         // echo $lastCookieVal;
-        $goggleObj = new RedsysAPI;
+        $goggleObj = new RedsyspurAPI;
 
         // $goggleObj->setParameter("DS_MERCHANT_AMOUNT", 10);
         $goggleObj->setParameter("DS_MERCHANT_AMOUNT", $amount);
         $goggleObj->setParameter("DS_MERCHANT_ORDER", $orderNumberGoogle);
-        $goggleObj->setParameter("DS_MERCHANT_MERCHANTCODE", "340873405");
+        $goggleObj->setParameter("DS_MERCHANT_MERCHANTCODE", $redsys_settings['merchant_account']);
         $goggleObj->setParameter("DS_MERCHANT_CURRENCY", "978");
         $goggleObj->setParameter("DS_MERCHANT_TRANSACTIONTYPE", "7");
-        $goggleObj->setParameter("DS_MERCHANT_TERMINAL", "001");
+        $goggleObj->setParameter("DS_MERCHANT_TERMINAL", $redsys_settings['terminal']);
         $goggleObj->setParameter("DS_MERCHANT_PAYMETHODS", "xpay");
         $goggleObj->setParameter("DS_MERCHANT_MERCHANTDATA", $insertedID);
         $goggleObj->setParameter("DS_MERCHANT_MERCHANTURL", $plugin_page);
@@ -528,19 +548,23 @@ function paymentFrontend($dynamount, $dyninsertedId)
         $goggleObj->setParameter("DS_MERCHANT_URLKO", $thank_you_page);
 
         $goggleparams = $goggleObj->createMerchantParameters();
-        // $goggleclaveSHA256 = 'qdBg81KwXKi+QZpgNXoOMfBzsVhBT+tm';
-        $goggleclaveSHA256 = 'sq7HjrUOBfKmC576ILgskD5srU870gJ7';
-        $goggleirma = $goggleObj->createMerchantSignature($goggleclaveSHA256); ?>
-        <form id="payGoogle" action="https://sis-t.redsys.es:25443/sis/realizarPago" method="POST">
-        <!-- <form id="payGoogle" action="https://sis.redsys.es/sis/realizarPago" method="POST"> -->
-            <input type="hidden" name="Ds_SignatureVersion" value="HMAC_SHA256_V1" />
-            <input type="hidden" name="Ds_MerchantParameters" value="<?php echo $goggleparams; ?>" />
-            <input type="hidden" name="Ds_Signature" value="<?php echo $goggleirma; ?>" />
-            <button type="submit"><span>
-                    <?php echo _e('Pagar con Bizum '); ?>
-                </span><img src="https://chocoletra.com/wp-content/uploads/2024/03/Bizum.svg.png"
-                    alt="<?php echo _e('Chocoletra'); ?>"></button>
-        </form>
+        $goggleclaveSHA256 = $redsys_settings['sha_key'];
+        // $goggleclaveSHA256 = 'sq7HjrUOBfKmC576ILgskD5srU870gJ7';
+        $goggleirma = $goggleObj->createMerchantSignature($goggleclaveSHA256);
+        if ($redsys_settings['mode'] === 'sandbox') {
+            ?>
+            <form id="payGoogle" action="https://sis-t.redsys.es:25443/sis/realizarPago" method="POST">
+            <?php } else { ?>
+                <form id="payGoogle" action="https://sis.redsys.es/sis/realizarPago" method="POST">
+                <?php } ?>
+                <input type="hidden" name="Ds_SignatureVersion" value="HMAC_SHA256_V1" />
+                <input type="hidden" name="Ds_MerchantParameters" value="<?php echo $goggleparams; ?>" />
+                <input type="hidden" name="Ds_Signature" value="<?php echo $goggleirma; ?>" />
+                <button type="submit"><span>
+                        <?php echo _e('Pagar con Bizum '); ?>
+                    </span><img src="https://chocoletra.com/wp-content/uploads/2024/03/Bizum.svg.png"
+                        alt="<?php echo _e('Chocoletra'); ?>"></button>
+            </form>
 
     </div>
 
@@ -553,10 +577,15 @@ function paymentFrontend($dynamount, $dyninsertedId)
     ?>
 
     <div style="display:none;" class="chocoletrasPlg__wrapperCode-payment-buttons-left">
-        <form id="payPayPal" action="https://ipnpb.paypal.com/cgi-bin/webscr<?php // echo PAYPAL_URL; ?>"
-            method="post">
+    <form id="payPayPal" action="
+        <?php if ($paypal_settings['mode'] === 'sandbox') { ?>
+            https://ipnpb.sandbox.paypal.com/cgi-bin/webscr
+            <?php } else { ?>
+        https://ipnpb.paypal.com/cgi-bin/webscr
+        <?php } ?>
+        " method="post">
             <!-- PayPal business email to collect payments -->
-            <input type='hidden' name='business' value="<?php echo PAYPAL_EMAIL; ?>">
+            <input type='hidden' name='business' value="<?php echo $paypal_settings['account_email']; ?>">
 
             <input type="hidden" name="item_name" value="<?php echo $getOrderData['fname']; ?>">
             <input type="hidden" name="item_number" value="<?php echo $getOrderData['inserted_id']; ?>">

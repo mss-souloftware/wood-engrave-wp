@@ -1183,3 +1183,14 @@ label {
     margin: 15px 0;
     color: #000;
 }
+#ctsPaymentAdmin input,
+#ctsPaymentAdmin label,
+#ctsPaymentAdmin select{
+    max-width:400px;
+    width:100%;
+}
+
+#ctsPaymentAdmin label{
+    display:inline-block;
+    margin:10px 0 !important;
+}

@@ -164,7 +164,7 @@ function chocoletrasInsertScripts()
   // wp_enqueue_script('chocoletrasScript', plugins_url('../src/main.js', __FILE__), array(), '1.0.0', true);
   wp_enqueue_style('pluginStylesClt', plugins_url('../src/css/clt_style.css', __FILE__), array(), false);
 
-  if (is_page('sample-page')) {
+  if (is_page('crear-tu-foto')) {
     wp_enqueue_style('bootstrapForPlugin', 'https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css', array(), false);
   }
 
@@ -243,7 +243,7 @@ function validate_coupon()
     $remaining_usage = $coupon->usage_limit - $new_usage_count;
 
     wp_send_json_success([
-      'message' => 'Coupon is valid',
+      'message' => 'El cupón es válido',
       'discount' => $coupon->discount_percentage, // Assuming this field stores the discount percentage
       'type' => 'percentage', // or 'fixed', based on your implementation
       'remaining_usage' => $remaining_usage

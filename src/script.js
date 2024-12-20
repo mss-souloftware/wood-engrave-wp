@@ -438,7 +438,7 @@
 
                         // Trigger payment form submission or another action if needed
                         $("#proceedPayment").click();
-                        console.log("proceesd paymnt")
+                        console.log("proceesd paymnt");
 
                     } else {
                         console.error("Process failed: ", parsedResponse.Datos.message);
@@ -833,15 +833,19 @@
         let couponCondition = false;
         $('#couponApply').click(function () {
             if (couponCondition) {
-                alert('You already use a coupon before In this Order.')
+                alert('Ya utilizaste un cupón antes en este pedido.')
                 return;
             }
             var couponCode = $('#coupon').val();
 
             if (couponCode === '') {
-                alert('Please enter a coupon code.');
+                alert('Por favor ingrese un código de cupón.');
                 return;
             }
+            
+            $(this).prop('disabled', true);
+            $(this).find('span').css('display','none');
+            $(this).find('.chocoletrasPlg-spiner-ring').css('display','block');
 
             $.ajax({
                 url: ajax_variables.ajax_url,
@@ -853,29 +857,45 @@
                 success: function (response) {
                     if (response.success) {
                         $("#usedCoupon").val(couponCode);
-                        alert('Coupon is valid. Discount: ' + response.data.discount + ' ' + response.data.type + '. Remaining uses: ' + response.data.remaining_usage);
-                        couponCondition = true;
+                       // alert('Coupon is valid. Discount: ' + response.data.discount + ' ' + response.data.type + '. Remaining uses: ' + response.data.remaining_usage);
+                       couponCondition = true;
+                       $('#couponApply .chocoletrasPlg-spiner-ring').css('display','none');
+                       $('#couponApply span').css('display','block');
+                       $('#couponApply span').text('Aplicado!');
                         if (response.data.type === 'fixed') {
                             let priceTotal = $('.chocoletrasPlg__wrapperCode-dataUser-form-input-price').val();
                             let afterDiscount = Number(priceTotal) - response.data.discount;
                             $('.priceCounter').text(afterDiscount);
                             $('.chocoletrasPlg__wrapperCode-dataUser-form-input-price').val(afterDiscount);
+                            $(".couponSection .couponResponse").text(`Cupón aplicado obtenga ${response.data.discount}€ descuento!`);
                         } else if (response.data.type === 'percentage') {
                             let priceTotal = $('.chocoletrasPlg__wrapperCode-dataUser-form-input-price').val();
                             let discountValue = (Number(priceTotal) * response.data.discount) / 100;
                             let afterDiscount = Number(priceTotal) - discountValue;
                             $('.priceCounter').text(afterDiscount.toFixed(2));
                             $('.chocoletrasPlg__wrapperCode-dataUser-form-input-price').val(afterDiscount.toFixed(2));
+                            $(".couponSection .couponResponse").text(`Cupón aplicado obtenga ${response.data.discount}% descuento!`);
                         } else {
-                            console.log('Unknown discount type');
+                            console.log('Tipo de descuento desconocido');
                         }
 
                     } else {
+                        $('#couponApply').prop('disabled', false);
+                        $('#couponApply span').css('display','block');
+                        $('#couponApply span').text('Aplicar');
+                        $('#couponApply .chocoletrasPlg-spiner-ring').css('display','none');
                         alert('Error: ' + response.data.message);
                     }
                 },
                 error: function (xhr, status, error) {
                     console.error('AJAX Error:', status, error);
+                },
+                complete: function () {
+                    if (!couponCondition) {
+                        $('#couponApply').prop('disabled', false);
+                        $('#couponApply span').text('Aplicar');
+                        $('#couponApply .chocoletrasPlg-spiner-ring').css('display','none');
+                    }
                 }
             });
         });

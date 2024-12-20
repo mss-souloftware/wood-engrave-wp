@@ -11,7 +11,7 @@ require_once ('confirmPayment/paymentfinish.php');
 require_once ('confirmPayment/closeprocess.php');
 require_once ('report/reportProblem.php');
 
-require_once ('payments/payments.php');
+require_once 'payments/payments.php';
 
 if (isset($_COOKIE['chocol_cookie'])) {
     $getCookieOUI = get_option($_COOKIE['chocol_cookie']);
@@ -144,26 +144,12 @@ function chocoletras_shortCode()
                 </div>
 
                 <div class="col-md-5 col-12 text-center mb-2">
-                    <div id="screenCenterLoader" class="chocoletrasPlg-spiner">
-                        <!-- <img id="screenCenterLoader" src="https://chocoletra.com/wp-content/uploads/2022/03/imagenlogotipoOFCIALCHOCOLETRA-1.png"
-                            alt="<?php // echo _e('Chocoletras'); ?>"> -->
+                    <div class="chocoletrasPlg-spiner">
+                        <img id="screenCenterLoader" src="<?php echo plugin_dir_url(__DIR__) . "img/sitelogo.png"; ?>"
+                            alt="<?php // echo _e('Chocoletras'); ?>">
                         <div class="chocoletrasPlg-spiner-ring"></div>
                     </div>
                     <div id="mainWrapperForm" class="card">
-                        <div id="pricingTable">
-                            <div class="pricingTableData">
-                                <ul>
-                                    <li>Prec. por letras:  <b><?php echo get_option('precLetra'); ?>€</b></li>
-                                    <li>Prec. por ♥/✯:    <b><?php echo get_option('precCoraz'); ?>€</b></li>
-                                    <li>Caracteres Maximo:    <b><?php echo get_option('maxCaracteres'); ?></b></li>
-                                    <li>Gasto Minimo:    <b><?php echo get_option('gastoMinimo'); ?>€</b></li>
-                                    <li>Sábado Gastos de envío:    <b><?php echo get_option('saturdayShiping'); ?>€</b></li>
-                                    <li>Gastos de envío normales:    <b><?php echo get_option('precEnvio'); ?>€</b></li>
-                                    <li>Gastos de envío exprés:    <b><?php echo get_option('expressShiping'); ?>€</b></li>
-                                </ul>
-                            </div>
-                            <div id="pricingTableBtn"> Detalles De Precios</div>
-                        </div>
                         <form id="ctf_form" class="chocoletrasPlg__wrapperCode-dataUser-form" action="test_action">
                             <input type="hidden" name="action" value="test_action" readonly>
                             <!-- progressbar -->
@@ -173,7 +159,7 @@ function chocoletras_shortCode()
                                     echo ' class="active"';
                                 }
                                 ?> id="account">
-                                    <strong>Frase</strong></li>
+                                    <strong>Foto</strong></li>
                                 <li <?php
                                 if (isset($_COOKIE['chocol_cookie']) || $_GET['abandoned']) {
                                     echo ' class="active"';
@@ -200,7 +186,7 @@ function chocoletras_shortCode()
                                 <div class="form-card">
                                     <div class="row">
                                         <div class="col-7">
-                                            <h2 class="fs-title">Wood Engraving WP</h2>
+                                            <h2 class="fs-title">Selecciona tu foto</h2>
                                         </div>
                                         <div class="col-5">
                                             <h2 class="steps">
@@ -217,17 +203,17 @@ function chocoletras_shortCode()
   <div class="drop-icon">
     <i class="fa-light fa-file-upload"></i>
   </div>
-  <div class="drop-text">Drag and drop your image here</div>
+  <div class="drop-text">Arrastra y suelta tu imagen aquí.</div>
 </div>
 
                                     <div class="controls">
-                                        <label for="contrast">Contrast</label>
+                                        <label for="contrast">Contraste</label>
                                         <input type="range" id="contrast" min="-100" max="100" value="0">
                                         <br>
-                                        <label for="brightness">Brightness</label>
+                                        <label for="brightness">Brillo</label>
                                         <input type="range" id="brightness" min="-100" max="100" value="0">
                                         <br>
-                                        <label for="textureAlpha">Wood Texture Transparency</label>
+                                        <label for="textureAlpha">Transparencia de textura de madera</label>
                                         <input type="range" id="textureAlpha" min="0" max="1" step="0.05" value="0.6">
                                     </div>              
                                 </div> <button id="<?php echo _e('continuarBTN') ?>" type="button" name="next"
@@ -327,9 +313,13 @@ function chocoletras_shortCode()
                                         <div class="couponSectionInner">
                                             <input type="text" name="name" id="coupon"
                                                 placeholder="Ingresa tu código de cupón aquí" />
-                                            <button type="button" id="couponApply">Aplicar</button>
+                                                <button type="button" id="couponApply">
+                                                <span>Aplicar</span>
+                                                <div class="chocoletrasPlg-spiner-ring"></div>
+                                            </button>
                                         </div>
-                                    </div>
+                                        <div class="couponResponse"></div>
+                                                                        </div>
 
                                     <div class="lineBreaker">
                                         <span class="forDesktop">⬇️ <b>SELECCIONA EL METODO DE PAGO</b> ⬇️</span>
@@ -385,6 +375,7 @@ function chocoletras_shortCode()
                                                     </div>
                                                     Pagar Con Bizum
                                                 </div>
+                                                <p>Recuerda tienes que aceptar en la aplicacion la operacion.</p>
                                             </div>
                                         <?php } ?>
                                         <?php $getPaypPal = get_option('ctf_settings')['payment_methods']['paypal'];
@@ -528,13 +519,22 @@ function chocoletras_shortCode()
                                             <h2 class="fs-title">Detalles Del Pedido</h2>
                                         </div>
                                         <div class="col-5">
-                                            <h2 class="steps">
+                                        <h2 class="steps">
                                             <?php if (!empty($result) && $_GET['coupon']) {
-                                                echo '<del style="color:red; font-size:18px;"> '. $result['precio'] .'</del>';
+                                                if($result['coupon'] === ''){
+                                                    echo '<del style="color:red; font-size:18px;"> '. $result['precio'] .'</del>';
+                                                }
+                                                else{
+                                                    echo  '';
+                                                }
                                              } ?>
                                                 <b class="priceCounter"><?php
                                                 if (!empty($result)) {
-                                                    echo $priceTotal;
+                                                    if($result['coupon'] === ''){
+                                                        echo $priceTotal;
+                                                    }else{
+                                                        echo  $result['precio'];
+                                                    }
                                                 } else{
                                                      echo $getOrderData['priceTotal'];
                                                  } ?></b>
@@ -712,7 +712,8 @@ function chocoletras_shortCode()
                                                     </div>
                                                     Pagar Con Bizum
                                                 </div>
-                                            </div>
+                                                <p>Recuerda tienes que aceptar en la aplicacion la operacion.</p>
+                                                                                        </div>
                                         <?php } ?>
                                         <?php $getPaypPal = get_option('ctf_settings')['payment_methods']['paypal'];
                                         if($getPaypPal === 1){

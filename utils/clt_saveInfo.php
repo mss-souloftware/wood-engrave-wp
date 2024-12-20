@@ -31,43 +31,54 @@ function responseForm()
             ]);
             return;
         }
+// Redsys or other payment gateways
+$paymentObj = new RedsyspurAPI;
+$formattedAmount = round(floatval($amount) * 100); // Format amount for Redsys
+$orderNumberRandom = bin2hex(random_bytes(5));
 
-        $paymentObj = new RedsysAPI;
-        $formattedAmount = round(floatval($amount) * 100);
-        $orderNumberRandom = bin2hex(random_bytes(5));
+$general_settings = get_option('ctf_general_settings', []);
+$redsys_settings = get_option('ctf_redsys_settings', []);
+$paypal_settings = get_option('ctf_paypal_settings', []);
 
-        $plugin_page = get_option('ctf_settings')['plugin_page'];
-        $plugin_payment = get_option('ctf_settings')['plugin_payment'];
-        $thank_you_page = get_option('ctf_settings')['thank_you_page'];
 
-        $paymentObj->setParameter("DS_MERCHANT_AMOUNT", $formattedAmount);
-        $paymentObj->setParameter("DS_MERCHANT_ORDER", $orderNumberRandom);
-        $paymentObj->setParameter("DS_MERCHANT_MERCHANTCODE", "340873405");
-        $paymentObj->setParameter("DS_MERCHANT_CURRENCY", "978");
-        $paymentObj->setParameter("DS_MERCHANT_TERMINAL", "001");
-        $paymentObj->setParameter("DS_MERCHANT_MERCHANTDATA", $response['Datos']['inserted_id']);
-        $paymentObj->setParameter("DS_MERCHANT_MERCHANTURL", $plugin_page);
-        $paymentObj->setParameter("DS_MERCHANT_URLOK", "$plugin_payment?payment=true");
-        $paymentObj->setParameter("DS_MERCHANT_URLKO", $thank_you_page);
+$plugin_page = $general_settings['plugin_page'];
+$plugin_payment = $general_settings['plugin_payment'];
+$thank_you_page = $general_settings['thank_you_page'];
 
-        $paymentObj->setParameter("DS_MERCHANT_TRANSACTIONTYPE", $paymentMethod === 'bizum' || $paymentMethod === 'google' ? "7" : "0");
+$paymentObj->setParameter("DS_MERCHANT_AMOUNT", $formattedAmount);
+$paymentObj->setParameter("DS_MERCHANT_ORDER", $orderNumberRandom);
+$paymentObj->setParameter("DS_MERCHANT_MERCHANTCODE", $redsys_settings['merchant_account']);
+$paymentObj->setParameter("DS_MERCHANT_CURRENCY", "978");
+$paymentObj->setParameter("DS_MERCHANT_TERMINAL", $redsys_settings['terminal']);
+$paymentObj->setParameter("DS_MERCHANT_MERCHANTDATA", $response['Datos']['inserted_id']);
+$paymentObj->setParameter("DS_MERCHANT_MERCHANTURL", $plugin_page);
+$paymentObj->setParameter("DS_MERCHANT_URLOK", "$plugin_payment?payment=true");
+$paymentObj->setParameter("DS_MERCHANT_URLKO", $thank_you_page);
 
-        if ($paymentMethod !== 'redsys') {
-            $paymentTypeMapping = [
-                'bizum' => ['payMethods' => 'z'],
-                'google' => ['payMethods' => 'xpay']
-            ];
+// Set DS_MERCHANT_TRANSACTIONTYPE based on payment method
+if ($paymentMethod === 'bizum' || $paymentMethod === 'google') {
+    $paymentObj->setParameter("DS_MERCHANT_TRANSACTIONTYPE", "7");
+} else {
+    $paymentObj->setParameter("DS_MERCHANT_TRANSACTIONTYPE", "0");
+}
 
-            if (!array_key_exists($paymentMethod, $paymentTypeMapping)) {
-                wp_send_json(['success' => false, 'message' => 'Invalid payment method']);
-                return;
-            }
+// Set payment method for Redsys alternatives
+if ($paymentMethod !== 'redsys') {
+    $paymentTypeMapping = [
+        'bizum' => ['payMethods' => 'z'],
+        'google' => ['payMethods' => 'xpay']
+    ];
 
-            $paymentObj->setParameter("DS_MERCHANT_PAYMETHODS", $paymentTypeMapping[$paymentMethod]['payMethods']);
-        }
+    if (!array_key_exists($paymentMethod, $paymentTypeMapping)) {
+        wp_send_json(['success' => false, 'message' => 'Invalid payment method']);
+        return;
+    }
+
+    $paymentObj->setParameter("DS_MERCHANT_PAYMETHODS", $paymentTypeMapping[$paymentMethod]['payMethods']);
+}
 
         $paymentParams = $paymentObj->createMerchantParameters();
-        $signature = $paymentObj->createMerchantSignature('sq7HjrUOBfKmC576ILgskD5srU870gJ7');
+        $signature = $paymentObj->createMerchantSignature($redsys_settings['sha_key']); // Use your secret key here
 
         wp_send_json([
             'success' => true,
